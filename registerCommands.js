@@ -1,7 +1,8 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js");
 require("dotenv").config();
 
-const CLIENT_ID = "1459080673133465695";
+const CLIENT_ID = "YOUR_APPLICATION_ID";
+const GUILD_ID = "YOUR_SERVER_ID"; // ONLY this server will get commands
 
 const commands = [
   new SlashCommandBuilder()
@@ -19,12 +20,12 @@ const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
   try {
-    console.log("⏳ Registering GLOBAL commands...");
+    console.log("⏳ Registering GUILD commands...");
     await rest.put(
-      Routes.applicationCommands(CLIENT_ID),
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: commands }
     );
-    console.log("✅ Global commands registered");
+    console.log("✅ Guild commands registered");
   } catch (err) {
     console.error(err);
   }
