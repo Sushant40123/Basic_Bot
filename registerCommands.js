@@ -1,8 +1,8 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js");
 require("dotenv").config();
 
-const CLIENT_ID = "YOUR_APPLICATION_ID";
-const GUILD_ID = "YOUR_SERVER_ID"; // ONLY this server will get commands
+const CLIENT_ID = "1459080673133465695";
+const GUILD_ID = "1457038106405503261"; // ONLY this server will get commands
 
 const commands = [
   new SlashCommandBuilder()
