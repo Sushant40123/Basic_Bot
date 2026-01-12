@@ -6,7 +6,7 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// ===== CONFIG FROM ENV =====
+// ===== ENV CONFIG =====
 const PORTAL_CHANNEL_ID = process.env.PORTAL_CHANNEL_ID;
 
 const RAID_ROLES = {
@@ -23,8 +23,8 @@ client.once(Events.ClientReady, () => {
   console.log("✅ Bot is online");
 });
 
-// ===== SLASH COMMANDS =====
-client.on(Events.InteractionCreate, async interaction => {
+// ===== SLASH COMMAND HANDLER =====
+client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "raid") return;
 
@@ -38,21 +38,15 @@ client.on(Events.InteractionCreate, async interaction => {
           `🔥 **Current Raid:** ${raid.currentRaid}\n⏳ Ends in ${raid.minutesLeft}m ${raid.secondsLeft}s`
         );
       } else {
-        await interaction.reply(
-          `❌ **No raid active right now**`
-        );
+        await interaction.reply("❌ **No raid active right now**");
       }
-    }
-
-    if (sub === "next") {
-      await interaction.reply(
-        `➡️ **Next Raid:** ${raid.nextRaid}`
-      );
+    } 
+    else if (sub === "next") {
+      await interaction.reply(`➡️ **Next Raid:** ${raid.nextRaid}`);
     }
 
   } catch (err) {
     console.error("Slash command error:", err);
-
     if (!interaction.replied) {
       await interaction.reply({
         content: "⚠️ Something went wrong. Try again.",
@@ -69,7 +63,6 @@ setInterval(async () => {
   try {
     const raid = getRaidInfo();
 
-    // Alert exactly once, 3 minutes before raid starts
     if (
       !raid.isActive &&
       raid.minutesLeft === 3 &&
@@ -85,4 +78,20 @@ setInterval(async () => {
 
       await channel.send(
         `**Portal:**\n` +
-        `current portal starts in **3 mins:**\n
+        `current portal starts in **3 mins:**\n` +
+        `**${raid.nextRaid}**\n\n` +
+        `${ping}`
+      );
+    }
+
+    if (raid.isActive) {
+      announcedForRaid = null;
+    }
+
+  } catch (err) {
+    console.error("Portal alert error:", err);
+  }
+}, 30 * 1000);
+
+// ===== LOGIN =====
+client.login(process.env.DISCORD_TOKEN);
