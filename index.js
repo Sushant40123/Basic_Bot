@@ -8,7 +8,7 @@ const client = new Client({
 
 // ================= CONFIG =================
 
-const BOT_OWNER_ID = "PASTE_YOUR_USER_ID_HERE";
+const BOT_OWNER_ID = "741686398503092227";
 const PORTAL_CHANNEL_ID = process.env.PORTAL_CHANNEL_ID;
 
 const RAID_ROLES = {
