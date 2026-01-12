@@ -1,39 +1,43 @@
-require("dotenv").config();
-const { Client, GatewayIntentBits, Events } = require("discord.js");
-const { getRaidInfo } = require("./raidLogic");
+const PORTAL_CHANNEL_ID = process.env.PORTAL_CHANNEL_ID;
 
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
-});
+const RAID_ROLES = {
+  Goblin: process.env.ROLE_GOBLIN,
+  Subway: process.env.ROLE_SUBWAY,
+  Infernal: process.env.ROLE_INFERNAL,
+  Insect: process.env.ROLE_INSECT,
+  Igris: process.env.ROLE_IGRIS,
+  Baruka: process.env.ROLE_BARUKA
+};
 
-client.once(Events.ClientReady, () => {
-  console.log("✅ Bot is online");
-});
+let lastAnnouncedRaid = null;
 
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName !== "raid") return;
-
+setInterval(async () => {
   const raid = getRaidInfo();
-  const sub = interaction.options.getSubcommand();
 
-  if (sub === "now") {
-    if (raid.isActive) {
-      await interaction.reply(
-        `🔥 **Current Raid:** ${raid.currentRaid}\n⏳ Ends in ${raid.minutesLeft}m ${raid.secondsLeft}s`
-      );
-    } else {
-      await interaction.reply(
-        `❌ **No raid active right now**\n➡️ **Next Raid:** ${raid.nextRaid}\n⏳ Starts in ${raid.minutesLeft}m ${raid.secondsLeft}s`
-      );
-    }
-  }
+  // Alert 3 minutes before raid starts
+  if (
+    !raid.isActive &&
+    raid.minutesLeft === 3 &&
+    lastAnnouncedRaid !== raid.nextRaid
+  ) {
+    lastAnnouncedRaid = raid.nextRaid;
 
-  if (sub === "next") {
-    await interaction.reply(
-      `➡️ **Next Raid:** ${raid.nextRaid}\n⏳ Starts in ${raid.minutesLeft}m ${raid.secondsLeft}s`
+    const channel = await client.channels.fetch(PORTAL_CHANNEL_ID);
+    if (!channel) return;
+
+    const roleId = RAID_ROLES[raid.nextRaid];
+    const ping = roleId ? `<@&${roleId}>` : "";
+
+    channel.send(
+      `**Portal:**\n` +
+      `current portal starts in **3 mins:**\n` +
+      `**${raid.nextRaid}**\n\n` +
+      `${ping}`
     );
   }
-});
 
-client.login(process.env.DISCORD_TOKEN);
+  // Reset once raid becomes active
+  if (raid.isActive) {
+    lastAnnouncedRaid = null;
+  }
+}, 30 * 1000);
